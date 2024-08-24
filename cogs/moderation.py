@@ -1,11 +1,15 @@
 import discord 
 from discord.ext import commands
+from discord import app_commands
 import requests
+import asyncio
+from collections import Counter
 
 
 class Numbers(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
+        self.warnings = {}
     
     @commands.Cog.listener()
     async def on_ready(self):
@@ -14,29 +18,90 @@ class Numbers(commands.Cog):
         await channel.send('Moderation cog loaded.')
     
     
+    @commands.command()
+    async def sync(self,ctx) -> None:
+        fmt= await ctx.bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f'synced {len(fmt)} commands.')
 
-    @commands.hybrid_group(name="parent" ,  with_app_command=True, description="Different Moderation Commands")
-    @commands.guild_only()  # Ensures this command only works in guilds (servers)
-    async def parent_command(self, ctx: commands.Context) -> None:
-          """
-    We even have the use of parents. This will work as usual for ext.commands but will be un-invokable for app commands.
-    This is a discord limitation as groups are un-invokable.
-    """
-    ...   # nothing we want to do in here, I guess!
-    @parent_command.command(name='avatar')
-    async def avatar(self, ctx : commands.Context , member: discord.Member):
-        embed=discord.Embed(title= member._user)
-        embed.set_image(url='{}'.format(member.display_avatar))
-        await ctx.send(embed=embed)
 
-    @parent_command.command(name='numbers')    
-    async def hello(self,ctx: commands.Context, numbers: int):
-        response=requests.get(f'http://numbersapi.com/{numbers}')
-        embed=discord.Embed(description=response.text)
+    @app_commands.command(name='purge', description='Purges Messages')
+    async def purge(self, interaction: discord.Interaction, purr: int) ->None:
+        await interaction.response.defer(ephemeral=False)
         
-        await ctx.send(embed=embed)
+        response_message = await interaction.original_response()
+
+        # Purge the specified number of messages, excluding the bot's confirmation message
+        def check(message):
+            return message.id != response_message.id
+        
+        deleted = await interaction.channel.purge(limit=purr, check=check)
+        asyncio.sleep(3)
+        if len(deleted) == 0:
+            embed=discord.Embed(title='Purge Complete!' , description='No messages were purged.')
+            await interaction.followup.send(embed=embed, ephemeral=False)
+
+        else:
+            embed=discord.Embed(title='Purge Complete!', description= f'{purr} Messages were purged.')          
+            await interaction.followup.send(embed=embed, ephemeral=False)
+    
+    # Slash command to issue a warning
+    @app_commands.command(name="warn", description="Warn a member.")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.describe(member="The member to warn", reason="The reason for the warning")
+    async def warn(self, interaction: discord.Interaction, member: discord.Member, reason: str = None):
+        
+        if member == interaction.user:
+            await interaction.response.send_message("You cannot warn yourself.", ephemeral=True)
+            return
+
+        if member.bot:
+            await interaction.response.send_message("You cannot warn a bot.", ephemeral=True)
+            return
+
+        # Add the warning to the warnings dictionary
+        if member.id not in self.warnings:
+            self.warnings[member.id] = []
+        self.warnings[member.id].append(reason)
+
+        await interaction.response.send_message(f"{member.mention} has been warned for: {reason}")
+
+    # Slash command to check warnings of a user
+    @app_commands.command(name="warnings", description="Check warnings of a member.")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.describe(member="The member whose warnings you want to check")
+    async def check_warnings(self, interaction: discord.Interaction, member: discord.Member):
+        if member.id in self.warnings:
+            warning_list = self.warnings[member.id]
+            warning_message = f"{member.mention} has {len(warning_list)} warning(s):\n" + "\n".join(warning_list)
+            await interaction.response.send_message(warning_message)
+        else:
+            await interaction.response.send_message(f"{member.mention} has no warnings.")
+
+    # Slash command to clear warnings of a user
+    @app_commands.command(name="clearwarnings", description="Clear all warnings of a member.")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.describe(member="The member whose warnings you want to clear")
+    async def clear_warnings(self, interaction: discord.Interaction, member: discord.Member):
+        if member.id in self.warnings:
+            del self.warnings[member.id]
+            await interaction.response.send_message(f"Cleared all warnings for {member.mention}.")
+        else:
+            await interaction.response.send_message(f"{member.mention} has no warnings to clear.")
+
+    # Error handling for permission errors
+    @warn.error
+    @check_warnings.error
+    @clear_warnings.error
+    async def on_command_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.errors.MissingPermissions):
+            await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
+
+    
     
 
+    
     
 async def setup(bot):
-    await bot.add_cog(Numbers(bot))
+    await bot.add_cog(Numbers(bot) , guilds=[discord.Object(id='1246531747106132060')])

@@ -30,7 +30,7 @@ intents.message_content=True
 class DiscordBot(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
-            command_prefix='$',
+            command_prefix='m',
             intents=intents,
             help_command=None,
         )
@@ -49,7 +49,7 @@ class DiscordBot(commands.Bot):
            if filename.endswith('.py'):
              await bot.load_extension(f'cogs.{filename[:-3]}')
 
-            
+   
     
 
     
@@ -65,15 +65,19 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot()
 
-@bot.command()
-async def sync(ctx) -> None:
-        """
-        Syncs the bot's application commands (slash commands) with Discord.
-        This command is restricted to the user with the ID specified in the .env file.
-        """
-        if str(ctx.author.id) == os.getenv("USER_ID"):
-            fmt = await ctx.bot.tree.sync(guild=ctx.guild)
-            await ctx.send(f'Synced {len(fmt)} commands.')
-        else:
-            await ctx.send("You do not have permission to sync commands.")
+#@bot.command()
+#async def sync(ctx) -> None:
+ #       """
+  #      Syncs the bot's application commands (slash commands) with Discord.
+      #  This command is restricted to the user with the ID specified in the .env file.
+   #     """
+    #    if str(ctx.author.id) == os.getenv("USER_ID"):
+     #       fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+      #      await ctx.send(f'Synced {len(fmt)} commands.')
+       # else:
+        #    await ctx.send("You do not have permission to sync commands.")
+
+
+
+
 bot.run(os.getenv("TOKEN") ,  log_handler=None)
