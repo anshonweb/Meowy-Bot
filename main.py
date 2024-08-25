@@ -54,6 +54,7 @@ class DiscordBot(commands.Bot):
 
     
 
+        
     async def setup_hook(self) -> None:
         """
         This will just be executed when the bot starts the first time.

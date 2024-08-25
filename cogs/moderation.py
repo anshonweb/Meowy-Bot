@@ -3,8 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import requests
 import asyncio
-from collections import Counter
-
+import datetime
 
 class Numbers(commands.Cog):
     def __init__(self,bot):
@@ -25,7 +24,7 @@ class Numbers(commands.Cog):
 
 
     @app_commands.command(name='purge', description='Purges Messages')
-    async def purge(self, interaction: discord.Interaction, purr: int) ->None:
+    async def purge(self, interaction: discord.Interaction, number: int) ->None:
         await interaction.response.defer(ephemeral=False)
         
         response_message = await interaction.original_response()
@@ -34,14 +33,14 @@ class Numbers(commands.Cog):
         def check(message):
             return message.id != response_message.id
         
-        deleted = await interaction.channel.purge(limit=purr, check=check)
-        asyncio.sleep(3)
+        deleted = await interaction.channel.purge(limit=number, check=check)
+        await asyncio.sleep(1)
         if len(deleted) == 0:
             embed=discord.Embed(title='Purge Complete!' , description='No messages were purged.')
             await interaction.followup.send(embed=embed, ephemeral=False)
 
         else:
-            embed=discord.Embed(title='Purge Complete!', description= f'{purr} Messages were purged.')          
+            embed=discord.Embed(title='Purge Complete!', description= f'{number} Messages were purged.')          
             await interaction.followup.send(embed=embed, ephemeral=False)
     
     # Slash command to issue a warning
@@ -99,8 +98,24 @@ class Numbers(commands.Cog):
             await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
 
     
-    
-
+    """The Timeout Command"""
+    @app_commands.command(name='mute', description='Mutes member for the duration specified.' )
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def timeout(self, interaction: discord.Interaction, member: discord.Member, seconds: int = 0, minutes: int = 0, hours: int = 0, days: int = 0, reason: str = None) ->None:
+        
+        duration = datetime.timedelta(seconds=seconds, minutes=minutes, hours= hours, days=days)
+        if member.top_role > interaction.guild.me.top_role:
+            await interaction.response.send_message(f"Cannot mute {member}. They have a higher role than me.", ephemeral=False )
+        
+       # elif duration=:
+          #  await member.timeout(1, reason=reason)
+          #  await interaction.response.send_message("Member has been timedout for 1 second")
+        
+        
+        else:
+            
+            await member.timeout(duration, reason=reason)
+            await interaction.response.send_message(f'{member.mention} was timed out until for {duration}', ephemeral=False)
     
     
 async def setup(bot):
