@@ -16,3 +16,6 @@ print(results[0].author)        # frgs
 print(results[0].raw)           # raw result
 
 
+
+USER_ID = '744729824400244758'
+TOKEN = 'MTI0NjUyNjE3MjA4NzU4Njg0OA.GBj7WA.uDa0jXfZNk9SgNHP0NV92anw3kYVgjJk9BpDwM'

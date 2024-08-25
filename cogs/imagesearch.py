@@ -12,6 +12,12 @@ from saucenao_api import AIOSauceNao
 class Trace(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
+        self.ctx_menu = app_commands.ContextMenu(
+            name='test1',
+            callback=self.test1,
+        )
+        self.bot.tree.add_command(self.ctx_menu)
+        
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -76,25 +82,62 @@ class Trace(commands.Cog):
     @app_commands.command(name='saucenao', description='Reverse Searches images')
     async def SauceNao(self, interaction: discord.Interaction, file: discord.Attachment = None, url: str = None) ->None:
         async with AIOSauceNao('5fae52160f484ac5727ad10410490282c0c4338d') as aio:
+            await interaction.response.defer()
             
+            replied_message = await interaction.channel.fetch_message(interaction.message.reference.message_id)
             if file:
                 image_data = await file.read()
                 results = await aio.from_file(image_data)
             
             elif url:
                 results = await aio.from_url(url)
-
+            elif replied_message and replied_message.attachments:
+                for attachment in replied_message.attachments:
+                    if attachment.content_type and attachment.content_type.startswith('image/'):
+                        results = await aio.from_url(attachment.url)
+                        break
+                else:
+                    results = []
             else:
                 await interaction.followup.send("Please provide either a file or a URL.")
                 return
-
+                 
             
             embed = discord.Embed(title='Best Match' , color=0x00ff00)
-            embed.add_field(name='Title', value= results[0].title)
-            embed.add_field(name='URL' , value = results[0].urls)
-            embed.add_field(name= 'Similarity', value = results[0].similarity)
+            embed.add_field(name='Title', value= results[0].title, inline=False)
+            embed.add_field(name='URL' , value = results[0].urls, inline=False)
+            embed.add_field(name= 'Similarity', value = results[0].similarity, inline=False)
             embed.set_image(url=results[0].thumbnail)
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
+
+    
+    @app_commands.guilds(1246531747106132060)
+    async def test1(self, interaction: discord.Interaction, message: discord.Message):
+        async with AIOSauceNao('5fae52160f484ac5727ad10410490282c0c4338d') as aio:
+            await interaction.response.defer(thinking=True)
+            print("Context menu invoked.")
+
+            if message.attachments:
+                image_found = False
+                for attachment in message.attachments:
+                    if attachment.content_type.startswith("image/"):
+                        image_found = True
+                        image_data = await attachment.read()
+                        results = await aio.from_file(image_data)
+                        break
+
+                if not image_found:
+                    await interaction.followup.send("The selected message doesn't contain any images.")
+            else:
+                await interaction.followup.send("The selected message doesn't contain any images.")
+
+            embed = discord.Embed(title='Best Match' , color=0x00ff00)
+            embed.add_field(name='Title', value= results[0].title, inline=False)
+            embed.add_field(name='URL' , value = results[0].urls, inline=False)
+            embed.add_field(name= 'Similarity', value = results[0].similarity, inline=False)
+            embed.set_image(url=results[0].thumbnail)
+            await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Trace(bot) , guilds=[discord.Object(id='1246531747106132060')])
+   
