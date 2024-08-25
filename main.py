@@ -48,9 +48,9 @@ class DiscordBot(commands.Bot):
         for filename in os.listdir('./cogs'):
            if filename.endswith('.py'):
              await bot.load_extension(f'cogs.{filename[:-3]}')
-
+             
    
-    
+        await bot.load_extension('jishaku')
 
     
 

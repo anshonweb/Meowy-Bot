@@ -1,24 +1,18 @@
-import requests
+from saucenao_api import SauceNao
+results = SauceNao('5fae52160f484ac5727ad10410490282c0c4338d').from_url('https://i.imgur.com/oZjCxGo.jpg')
 
-# Send the request
-with open("demo.jpeg", "rb") as image_file:
-    response = requests.post(
-        "https://api.trace.moe/search",
-        files={"image": image_file}
-    )
+len(results)   # 6
+bool(results)  # True
 
-# Get the JSON response
-data = response.json()
+# Request limits
+results.short_remaining  # 4  (per 30 seconds limit)
+results.long_remaining   # 99 (per day limit)
 
-# Extract the first result
-best_match = data['result'][0]
+print(results[0].thumbnail)     # temporary URL for picture preview
+print(results[0].similarity)    # 93.3
+print(results[0].title )        # めぐみん
+print(results[0].urls) # ['https://www.pixiv.net/member_illust.php?mode=medium&illust_id=77630170']
+print(results[0].author)        # frgs
+print(results[0].raw)           # raw result
 
-# Print out relevant details
-print("Anime ID:", best_match['anilist'])
-print("Filename:", best_match['filename'])
-print("Episode:", best_match['episode'])
-print("From:", best_match['from'])
-print("To:", best_match['to'])
-print("Similarity:", best_match['similarity'])
-print("Video URL:", best_match['video'])
-print("Image URL:", best_match['image'])
+

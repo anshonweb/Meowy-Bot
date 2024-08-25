@@ -38,6 +38,13 @@ class moderationtext(commands.Cog):
             await ctx.send(f'{member.mention} was timed out until for {duration}', ephemeral=False)
     
     
+    @commands.command()
+    async def avatar(self,ctx, member: discord.Member) ->None:
+        avatar = member.avatar.url
+        embed= discord.Embed(title=f'{member.name}')
+        embed.set_image(url= avatar)
+
+        await ctx.send(embed=embed)
     
 
 async def setup(bot):

@@ -117,6 +117,18 @@ class Numbers(commands.Cog):
             await member.timeout(duration, reason=reason)
             await interaction.response.send_message(f'{member.mention} was timed out until for {duration}', ephemeral=False)
     
+    """Avatar Command"""
+
+    @app_commands.command(name='avatar', description='Views avatar of the mentioned user.')
+    async def avatar(self, interaction: discord.Interaction, member: discord.Member) ->None:
+        await interaction.response.defer(ephemeral=False)
+        avatar = member.avatar.url
+        embed= discord.Embed(title=f'{member.name}')
+        embed.set_image(url= avatar)
+        
+        await interaction.followup.send(embed=embed, ephemeral=False)
+        
+
     
 async def setup(bot):
     await bot.add_cog(Numbers(bot) , guilds=[discord.Object(id='1246531747106132060')])
