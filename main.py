@@ -30,9 +30,10 @@ intents.message_content=True
 class DiscordBot(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
-            command_prefix='m',
+            command_prefix='?',
             intents=intents,
             help_command=None,
+            owner_ids = {744729824400244758,708231383688019999},
         )
 
     

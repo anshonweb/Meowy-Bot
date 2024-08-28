@@ -12,19 +12,11 @@ class moderationtext(commands.Cog):
         channel = self.bot.get_channel(1246534324925501521)
         await channel.send('ModerationText cog loaded.')
 
-
-    @commands.command()
-    @commands.has_permissions(manage_messages=True)
-    async def purge(self,ctx, num: int) ->None:
-        
-        deleted = await ctx.channel.purge(limit=num+1)
-        embed=discord.Embed(title='Purge' , description= f'{num} messages were purged by {ctx.author}')
-        await ctx.send(embed=embed)
     
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
-    async def timeout(self, ctx, member: discord.Member, seconds: int = 0, minutes: int = 0, hours: int = 0, days: int = 0, reason: str = None) ->None:
+    async def mute(self, ctx, member: discord.Member, seconds: int = 0, minutes: int = 0, hours: int = 0, days: int = 0, reason: str = None) ->None:
         
         duration = datetime.timedelta(seconds=seconds, minutes=minutes, hours= hours, days=days)
         if member.top_role > ctx.guild.me.top_role:
@@ -37,14 +29,23 @@ class moderationtext(commands.Cog):
             await member.timeout(duration, reason=reason)
             await ctx.send(f'{member.mention} was timed out until for {duration}', ephemeral=False)
     
-    
     @commands.command()
-    async def avatar(self,ctx, member: discord.Member) ->None:
-        avatar = member.avatar.url
-        embed= discord.Embed(title=f'{member.name}')
-        embed.set_image(url= avatar)
+    @commands.has_permissions(manage_messages=True)
+    async def unmute(self, ctx, member: discord.Member) ->None:
+        await member.timeout(None, reason=None)
+        await ctx.send(f'Unmuted {member.mention} .', ephemeral=False)
 
-        await ctx.send(embed=embed)
+    @commands.command()
+    @commands.has_permissions(manage_roles=True)
+    async def addrole(self, ctx, member:discord.Member, role: discord.Role, reason: str = None) ->None:
+        await member.add_roles(role, reason=None , atomic=True)
+        await ctx.send(f'{role.name} added for {member.mention}')
+        
+    @commands.command()
+    @commands.has_permissions(manage_roles=True)
+    async def removerole(self, ctx , member:discord.Member, role: discord.Role , reason: str = None)->None:
+        await member.remove_roles(role, reason=None, atomic=True)
+        await ctx.send(f'{role.name} removed for {member.mention}')
     
 
 async def setup(bot):

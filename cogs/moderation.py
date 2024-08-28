@@ -21,27 +21,6 @@ class Numbers(commands.Cog):
     async def sync(self,ctx) -> None:
         fmt= await ctx.bot.tree.sync(guild=ctx.guild)
         await ctx.send(f'synced {len(fmt)} commands.')
-
-
-    @app_commands.command(name='purge', description='Purges Messages')
-    async def purge(self, interaction: discord.Interaction, number: int) ->None:
-        await interaction.response.defer(ephemeral=False)
-        
-        response_message = await interaction.original_response()
-
-        # Purge the specified number of messages, excluding the bot's confirmation message
-        def check(message):
-            return message.id != response_message.id
-        
-        deleted = await interaction.channel.purge(limit=number, check=check)
-        await asyncio.sleep(1)
-        if len(deleted) == 0:
-            embed=discord.Embed(title='Purge Complete!' , description='No messages were purged.')
-            await interaction.followup.send(embed=embed, ephemeral=False)
-
-        else:
-            embed=discord.Embed(title='Purge Complete!', description= f'{number} Messages were purged.')          
-            await interaction.followup.send(embed=embed, ephemeral=False)
     
     # Slash command to issue a warning
     @app_commands.command(name="warn", description="Warn a member.")
@@ -117,18 +96,10 @@ class Numbers(commands.Cog):
             await member.timeout(duration, reason=reason)
             await interaction.response.send_message(f'{member.mention} was timed out until for {duration}', ephemeral=False)
     
-    """Avatar Command"""
 
-    @app_commands.command(name='avatar', description='Views avatar of the mentioned user.')
-    async def avatar(self, interaction: discord.Interaction, member: discord.Member) ->None:
-        await interaction.response.defer(ephemeral=False)
-        avatar = member.avatar.url
-        embed= discord.Embed(title=f'{member.name}')
-        embed.set_image(url= avatar)
-        
-        await interaction.followup.send(embed=embed, ephemeral=False)
-        
+
+    
 
     
 async def setup(bot):
-    await bot.add_cog(Numbers(bot) , guilds=[discord.Object(id='1246531747106132060')])
+    await bot.add_cog(Numbers(bot) , guilds=[discord.Object(id='1246531747106132060') , discord.Object(id='820326376673771540')])
