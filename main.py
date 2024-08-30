@@ -41,7 +41,8 @@ class DiscordBot(commands.Bot):
         print(f'Logged in as {self.user}')
         channel = bot.get_channel(1246534324925501521)
         await channel.send(f"Logged in as {self.user}")
-   
+        
+              
     async def load_cogs(self) -> None:
         """
         The code in this function is executed whenever the bot will start.
