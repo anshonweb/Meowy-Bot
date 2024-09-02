@@ -1,0 +1,7 @@
+.env
+config.json
+maindatabase.db
+test.py
+cogs/__pycache__
+cogs/fonts
+cogs/config.json
