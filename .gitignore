@@ -5,3 +5,4 @@ test.py
 cogs/__pycache__
 cogs/fonts
 cogs/config.json
+.venv
