@@ -2,7 +2,6 @@ import discord
 from  discord.ext import commands
 from discord import app_commands
 from utils.Anilist.anilist import anilist
-from utils.Anilist.anilist_auth import anilist_auth
 from utils.paginator import ButtonPaginator
 
 
