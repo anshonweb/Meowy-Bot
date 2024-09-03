@@ -45,7 +45,7 @@ class ButtonPaginator(Generic[PageT_co], discord.ui.View):
         pages: Sequence[PageT_co],
         *,
         author_id: Optional[int] = None,
-        timeout: Optional[float] = 180.0,
+        timeout: Optional[float] = 60,
         delete_message_after: bool = False,
         per_page: int = 1,
     ) -> None:
@@ -139,6 +139,9 @@ class ButtonPaginator(Generic[PageT_co], discord.ui.View):
         kwargs["attachments"] = kwargs.pop("files", [])
         await interaction.response.edit_message(**kwargs)
 
+    async def update_embed(self, interaction: Interaction):
+        await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
+
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.blurple, emoji="⬅️")
     async def previous_page(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
         self.current_page -= 1
@@ -150,12 +153,11 @@ class ButtonPaginator(Generic[PageT_co], discord.ui.View):
         await self.update_page(interaction)
 
     @discord.ui.button(label="Stop", style=discord.ButtonStyle.red, emoji="⏹️")
-    async def stop_paginator(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
-        if self.delete_message_after:
-            if self.message is not None:
-                await self.message.delete()
-        else:
-            await interaction.response.send_message("Stopped the paginator.")
+    async def stop_paginator(self, interaction: Interaction, button: Button):
+        for child in self.children:
+            child.disabled = True  # Disable all buttons
+
+        await interaction.response.edit_message(view=self)  # Edit the message to remove buttons
 
         self.stop()
 

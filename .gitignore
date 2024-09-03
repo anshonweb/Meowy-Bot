@@ -6,3 +6,6 @@ cogs/__pycache__
 cogs/fonts
 cogs/config.json
 .venv
+utils/__pycache__
+utils/Anilist/__pycache__
+utils/Anilist/anilist_auth.py
